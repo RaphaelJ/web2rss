@@ -14,3 +14,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+from datetime import datetime, timezone
+
+from web2rss.app import db
+
+
+class Feed(db.Model):
+    __tablename__ = 'feed'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    created_at = db.Column(
+        db.DateTime(), nullable=False, default=lambda: datetime.now(tz=timezone.utc)
+    )
+
+    url = db.Column(db.String(), nullable=False)
+    page_title = db.Column(db.String(), nullable=False)
+
+    article_selector = db.Column(db.String(), nullable=True)
+    url_selector = db.Column(db.String(), nullable=True)
+    title_selector = db.Column(db.String(), nullable=True)
+    date_selector = db.Column(db.String(), nullable=True)
+    description_selector = db.Column(db.String(), nullable=True)

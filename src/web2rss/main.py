@@ -65,6 +65,22 @@ def _create_tables(_args: argparse.Namespace):
     with app.app_context():
         db.create_all()
 
+        with db.session.begin():
+            from web2rss.models import Feed
+
+            db.session.add(
+                Feed(
+                    url="https://plurrrr.com/",
+                    page_title="home — Plurrrr",
+                    article_selector="div.tl-page main article",
+                    url_selector="h2 a[href]",
+                    title_selector="h2 a",
+                    date_selector=None,
+                    description_selector="blockquote p",
+                )
+            )
+            db.session.commit()
+
 
 def _shell(args: argparse.Namespace):
     with app.app_context():

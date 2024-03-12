@@ -14,28 +14,3 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-
-from flask import Response, render_template
-
-from web2rss.app import app, db
-from web2rss.feed import fetch_feed_items, feed_to_rss
-from web2rss.models import Feed
-
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-@app.route("/feed/<int:id>.xml")
-def feed(id: int):
-    with db.session.begin():
-        feed = db.session.query(Feed).get_or_404(id)
-
-    items = fetch_feed_items(feed)
-
-    if items is not None:
-        return Response(feed_to_rss(feed, items), mimetype="application/rss+xml")
-    else:
-        return "Invalid feed", 400
