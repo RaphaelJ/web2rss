@@ -17,49 +17,66 @@
 
 
 import hashlib
+import os.path
 
 from dataclasses import dataclass
 from datetime import datetime
+from functools import cache
 from typing import List, Optional
 
 import bs4
 import dateparser
+import json
 import requests
 
 from feedgen.feed import FeedGenerator
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 from requests.exceptions import RequestException
 
+from web2rss.app import app
 from web2rss.models import Feed
 
 
 @dataclass
-class Item:
+class Article:
     url: Optional[str]
     title: Optional[str]
     date: Optional[str]
-    description: Optional[str]
+    summary: Optional[str]
 
 
-def fetch_feed_items(feed: Feed) -> Optional[List[Item]]:
-    """Get all the article items of a given Feed object."""
+def create_feed_from_url(url: str) -> Optional[Feed]:
+    dom = _fetch_dom(url)
 
-    try:
-        resp = requests.get(feed.url)
-        resp.raise_for_status()
-        resp.encoding = "utf-8"
-
-        html = resp.text
-    except RequestException as e:
+    if dom is None:
         return None
 
-    dom = bs4.BeautifulSoup(html, 'html.parser')
+    page_title_element = dom.select_one("html head title")
+
+    if page_title_element is not None:
+        page_title = page_title_element.text
+    else:
+        page_title = url
+
+    feed = Feed(url=url, page_title=page_title)
+
+    _guess_feed_selectors_from_dom(dom, feed)
+
+    return feed
+
+
+def fetch_feed_items(feed: Feed) -> Optional[List[Article]]:
+    """Get all the article of a given Feed object."""
+
+    dom = _fetch_dom(feed.url)
 
     if __feed_has_required_selectors(feed):
         articles = dom.select(feed.article_selector)
 
         items = [
-            __parse_article(feed, article)
-            for article in articles
+            __parse_article_dom(feed, article_dom)
+            for article_dom in articles
         ]
         items = [i for i in items if i is not None]
     else:
@@ -68,7 +85,7 @@ def fetch_feed_items(feed: Feed) -> Optional[List[Item]]:
     return items
 
 
-def feed_to_rss(feed: Feed, items: List[Item]) -> str:
+def feed_to_rss(feed: Feed, items: List[Article]) -> str:
     fg = FeedGenerator()
 
     fg.id(feed.url)
@@ -93,29 +110,84 @@ def feed_to_rss(feed: Feed, items: List[Item]) -> str:
             guid_components.append(item.title)
 
         if item.date:
-            fe.pubdate(item.date)
+            fe.pubDate(item.date)
             guid_components.append(item.date)
 
-        if item.description:
-            fe.content(item.description, type="CDATA")
+        if item.summary:
+            fe.content(item.summary, type="CDATA")
 
         fe.guid(__gen_guid(guid_components))
 
     return fg.rss_str(pretty=True)
 
+def _fetch_dom(url: str) -> Optional[bs4.BeautifulSoup]:
+    try:
+        resp = requests.get(url)
+        resp.raise_for_status()
+        resp.encoding = "utf-8"
+
+        html = resp.text
+    except RequestException as _e:
+        return None
+
+    return bs4.BeautifulSoup(html, 'html.parser')
+
+
+@cache
+def _mistral_client() -> MistralClient:
+    api_key = app.config["MISTRAL_API_KEY"]
+    return MistralClient(api_key)
+
+
+@cache
+def _guess_selectors_prompt() -> str:
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    prompt_path = os.path.join(current_dir, "prompts", "guess_selectors.md")
+
+    with open(prompt_path) as f:
+        return f.read()
+
+
+def _guess_feed_selectors_from_dom(dom: bs4.BeautifulSoup, feed: Feed) -> None:
+    """Uses a LLM to guess and set the item selectors from the page HTML content."""
+
+    messages = [
+        ChatMessage(role="system", content=_guess_selectors_prompt()),
+        ChatMessage(role="user", content=str(dom.select_one("body"))),
+    ]
+
+    response = _mistral_client().chat(
+        model="mistral-large-latest",
+        response_format={"type": "json_object"},
+        messages=messages,
+    )
+
+    print(response.choices[0].message.content)
+
+    json_response = json.loads(response.choices[0].message.content)
+    print(json_response)
+
+    if "article" in json_response:
+        feed.article_selector = json_response["article"]
+
+        feed.url_selector = json_response.get("url")
+        feed.title_selector = json_response.get("title")
+        feed.date_selector = json_response.get("date")
+        feed.summary_selector = json_response.get("summary")
+
 
 def __feed_has_required_selectors(feed: Feed) -> bool:
-    return feed.article_selector and any([feed.title_selector, feed.description_selector])
+    return feed.article_selector and any([feed.title_selector, feed.summary_selector])
 
 
-def __parse_article(feed: Feed, article: bs4.element.Tag) -> Optional[Item]:
-    url = __parse_url(article, feed.url_selector)
-    title = __parse_text(article, feed.title_selector)
-    date = __parse_date(article, feed.date_selector)
-    desc = __parse_text(article, feed.description_selector)
+def __parse_article_dom(feed: Feed, article_dom: bs4.element.Tag) -> Optional[Article]:
+    url = __parse_url(article_dom, feed.url_selector)
+    title = __parse_text(article_dom, feed.title_selector)
+    date = __parse_date(article_dom, feed.date_selector)
+    desc = __parse_text(article_dom, feed.summary_selector)
 
     if title or desc:  # RSS requires at least one of `title` or `desc`.
-        return Item(url, title, date, desc)
+        return Article(url, title, date, desc)
     else:
         return None
 

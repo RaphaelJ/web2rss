@@ -37,4 +37,4 @@ class Feed(db.Model):
     url_selector = db.Column(db.String(), nullable=True)
     title_selector = db.Column(db.String(), nullable=True)
     date_selector = db.Column(db.String(), nullable=True)
-    description_selector = db.Column(db.String(), nullable=True)
+    summary_selector = db.Column(db.String(), nullable=True)

@@ -16,20 +16,32 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from flask import Response, render_template
+from flask import Response, render_template, redirect, request, url_for
 
 from web2rss.app import app, db
-from web2rss.feed import fetch_feed_items, feed_to_rss
+from web2rss.feed import fetch_feed_items, feed_to_rss, create_feed_from_url
+from web2rss.forms import URLForm
 from web2rss.models import Feed
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    form = URLForm(request.form)
+
+    if request.method == "POST" and form.validate():
+        feed = create_feed_from_url(form.url.data)
+
+        with db.session.begin():
+            db.session.add(feed)
+            db.session.commit()
+
+        return redirect(url_for("feed_xml", id=feed.id))
+    else:
+        return render_template("index.html", form=form)
 
 
 @app.route("/feed/<int:id>.xml")
-def feed(id: int):
+def feed_xml(id: int):
     with db.session.begin():
         feed = db.session.query(Feed).get_or_404(id)
 

@@ -4,6 +4,28 @@
 
 {% block content_title %}Web2RSS{% endblock %}
 
+
+{% block content_subtitle %}
+<p class="lead">Generate <strong>RSS</strong> feeds from <strong>URLs</strong>.</p>
+{% endblock %}
+
 {% block content %}
-Generates RSS feeds for a given URL.
+<div class="row">
+    <form action="{{ url_for('index') }}" method="POST" class="col col-md-8 offset-md-2">
+        {{ form.csrf_token }}
+
+        <div class="row g-2 align-items-center">
+            <div class="col">
+            {{ form.url.label(class_="visually-hidden") }}
+            {{ form.url(class_="form-control form-control-lg", placeholder="http://") }}
+            </div>
+            <div class="col-md-auto d-grid">
+                <button type="submit" class="btn btn-lg btn-primary">
+                    <i class="bi bi-magic"></i>
+                    Generate
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock %}

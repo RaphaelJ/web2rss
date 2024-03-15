@@ -30,6 +30,8 @@ class Config(object):
     SECRET_KEY = os.environ["SECRET_KEY"]
     SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URL"]
 
+    MISTRAL_API_KEY = os.environ["MISTRAL_API_KEY"]
+
 
 class ProductionConfig(Config):
     DEBUG = False

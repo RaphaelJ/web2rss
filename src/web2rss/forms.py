@@ -14,3 +14,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+import requests
+from requests import RequestException
+
+from wtforms import Form, URLField
+from wtforms.validators import InputRequired, ValidationError
+
+
+class URLForm(Form):
+    url = URLField("Webpage URL", validators=[InputRequired()])
+
+    def validate_url(self, field):
+        try:
+            response = requests.get(field.data)
+            if not (200 <= response.status_code < 300):
+                raise ValidationError("The website returned an invalid response.")
+        except RequestException as _e:
+            raise ValidationError("An error occured when trying to reach the website.")
