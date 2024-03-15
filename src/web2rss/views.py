@@ -19,7 +19,7 @@
 from flask import Response, render_template, redirect, request, url_for
 
 from web2rss.app import app, db
-from web2rss.feed import fetch_feed_items, feed_to_rss, create_feed_from_url
+from web2rss.feed_utils import fetch_feed_items, feed_to_rss, create_feed_from_url
 from web2rss.forms import URLForm
 from web2rss.models import Feed
 
@@ -37,7 +37,10 @@ def index():
 
         return redirect(url_for("feed_xml", id=feed.id))
     else:
-        return render_template("index.html", form=form)
+        with db.session.begin():
+            feeds = Feed.query.all()
+
+        return render_template("index.html", form=form, feeds=feeds)
 
 
 @app.route("/feed/<int:id>.xml")

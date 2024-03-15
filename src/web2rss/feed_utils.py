@@ -71,7 +71,7 @@ def fetch_feed_items(feed: Feed) -> Optional[List[Article]]:
 
     dom = _fetch_dom(feed.url)
 
-    if __feed_has_required_selectors(feed):
+    if feed.has_required_selectors():
         articles = dom.select(feed.article_selector)
 
         items = [
@@ -174,10 +174,6 @@ def _guess_feed_selectors_from_dom(dom: bs4.BeautifulSoup, feed: Feed) -> None:
         feed.title_selector = json_response.get("title")
         feed.date_selector = json_response.get("date")
         feed.summary_selector = json_response.get("summary")
-
-
-def __feed_has_required_selectors(feed: Feed) -> bool:
-    return feed.article_selector and any([feed.title_selector, feed.summary_selector])
 
 
 def __parse_article_dom(feed: Feed, article_dom: bs4.element.Tag) -> Optional[Article]:

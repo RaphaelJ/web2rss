@@ -38,3 +38,6 @@ class Feed(db.Model):
     title_selector = db.Column(db.String(), nullable=True)
     date_selector = db.Column(db.String(), nullable=True)
     summary_selector = db.Column(db.String(), nullable=True)
+
+    def has_required_selectors(self) -> bool:
+        return self.article_selector and any([self.title_selector, self.summary_selector])
