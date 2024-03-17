@@ -2,11 +2,10 @@
 
 {% block page_title %}Generate RSS feeds from URLs{% endblock %}
 
-{% block content_title %}<i class="bi bi-rss"></i> Web2RSS{% endblock %}
-
-
 {% block content_subtitle %}
-<p class="lead">Generate <strong>RSS</strong> feeds from <strong>URLs</strong>.</p>
+<p class="lead">
+    <small>Generate</small> <strong>RSS</strong> <small>feeds from</small> <strong>URLs</strong>
+</p>
 {% endblock %}
 
 {% block content %}
@@ -17,7 +16,7 @@
         <div class="row g-2 align-items-center">
             <div class="col">
             {{ form.url.label(class_="visually-hidden") }}
-            {{ form.url(class_="form-control form-control-lg", placeholder="http://") }}
+            {{ form.url(class_="form-control form-control-lg", placeholder="https://") }}
             </div>
             <div class="col-md-auto d-grid">
                 <button type="submit" class="btn btn-lg btn-primary">
@@ -38,12 +37,20 @@
                 <div class="card-body">
                     <h5 class="card-title text-truncate">{{ feed.page_title }}</h5>
                     <h6 class="card-subtitle mb-2 text-body-secondary text-truncat">
-                        <small><a href="{{ feed.url }}">{{ feed.url }}</a></small>
+                        <small>
+                            <a
+                                href="{{ feed.url }}"
+                                target="_blank"
+                                style="text-decoration: inherit; color: inherit;">
+                                {{ feed.url }}
+                            </a>
+                        </small>
                     </h6>
 
                     {% if feed.has_required_selectors() %}
                         <a
                             href="{{ url_for('feed_xml', id=feed.id) }}"
+                            target="_blank"
                             class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-rss"></i>
                             Feed
@@ -56,7 +63,9 @@
                             </button></abbr>
                     {% endif %}
 
-                    <a href="#" class="btn btn-sm btn-outline-primary">
+                    <a
+                        href="{{ url_for('feed_settings', id=feed.id) }}"
+                        class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-gear"></i>
                         Settings
                     </a>

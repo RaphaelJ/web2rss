@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ feed.page_title|truncate(64) }}{% endblock %}
+
+{% block content_subtitle %}
+<p class="lead text-truncate">{{ feed.page_title }}</p>
+
+<p>
+    <a
+        href="{{ url_for('index') }}"
+        class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover">
+        <i class="bi bi-arrow-left"></i>
+        Get back
+    </a>
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="row row-gap-4">
+
+{% if not feed.has_required_selectors() %}
+    <div class="col-12">
+        <div class="alert alert-danger">
+            <p class="lead">
+                <i class="bi bi-exclamation-diamond"></i>
+                This feed is incorrectly configured.
+            </p>
+            Please setup the content selectors manually.
+        </div>
+    </div>
+{% endif %}
+
+    <div class="col-12">
+        <div class="col input-group">
+            <span class="input-group-text">
+                <i class="bi bi-rss"></i>&nbsp;Feed URL
+            </span>
+            <input
+                type="text"
+                class="form-control form-control-lg"
+                value="{{ url_for('feed_xml', id=feed.id, _external=True) }}"
+                {% if not feed.has_required_selectors() %}
+                    disabled
+                {% endif %}
+                onfocus="this.select()">
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        <iframe
+            title="{{ feed.page_title|escape }}"
+            style="
+                width: 100%;
+                height: 600px;
+                border: var(--bs-border-width) solid var(--bs-border-color);
+                border-radius: var(--bs-border-radius);"
+            src="{{ feed.url }}">
+        </iframe>
+    </div>
+
+    <div class="col-lg-3">
+        <form
+            action="{{ url_for('feed_settings', id=feed.id) }}"
+            method="POST"
+            class="row row-gap-2">
+            <h4>Content selectors</h4>
+
+            <div class="col-12">
+                <label for="article-selector" class="form-label"><small>Article</small></label>
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-dm btn-outline-secondary" type="button">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        id="article-selector"
+                        name="article_selector"
+                        value="{{ feed.article_selector|default('') }}">
+                </div>
+            </div>
+
+            <div class="offset-1 col-11">
+                <label for="url-selector" class="form-label"><small>Link</small></label>
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-dm btn-outline-secondary" type="button">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        id="url-selector"
+                        name="url_selector"
+                        value="{{ feed.url_selector|default('') }}">
+                </div>
+            </div>
+
+            <div class="offset-1 col-11">
+                <label for="title-selector" class="form-label"><small>Title</small></label>
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-dm btn-outline-secondary" type="button">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        id="title-selector"
+                        name="title_selector"
+                        value="{{ feed.title_selector|default('') }}">
+                </div>
+            </div>
+
+            <div class="offset-1 col-11">
+                <label for="date-selector" class="form-label">
+                    <small>Publication date</small>
+                </label>
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-dm btn-outline-secondary" type="button">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        id="date-selector"
+                        name="date_selector"
+                        value="{{ feed.date_selector|default('') }}">
+                </div>
+            </div>
+            <div class="offset-1 col-11">
+                <label for="summary-selector" class="form-label"><small>Summary</small></label>
+                <div class="input-group input-group-sm">
+                    <button class="btn btn-dm btn-outline-secondary" type="button">
+                        <i class="bi bi-hand-index"></i>
+                    </button>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        id="summary-selector"
+                        name="summary_selector"
+                        value="{{ feed.summary_selector|default('') }}">
+                </div>
+            </div>
+
+            <div class="col-12 mt-3 d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-floppy"></i>
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

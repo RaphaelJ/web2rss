@@ -8,7 +8,9 @@ You should return the DOM selectors that select:
 * the "date" (submission date) object within the "article" object
 * the "summary" object, within the "article" object
 
-Only returns a JSON object. The format should be identical to this:
+Only returns a VALID JSON object. Do not add anything else to your answer.
+
+The format should be identical to this:
 
 {
     "article": "body content div.article",

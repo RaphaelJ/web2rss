@@ -19,12 +19,12 @@
 import requests
 from requests import RequestException
 
-from wtforms import Form, URLField
-from wtforms.validators import InputRequired, ValidationError
+from wtforms import Form, StringField, URLField
+from wtforms.validators import DataRequired, InputRequired, ValidationError
 
 
 class URLForm(Form):
-    url = URLField("Webpage URL", validators=[InputRequired()])
+    url = URLField("Webpage URL", validators=[DataRequired()])
 
     def validate_url(self, field):
         try:
@@ -33,3 +33,12 @@ class URLForm(Form):
                 raise ValidationError("The website returned an invalid response.")
         except RequestException as _e:
             raise ValidationError("An error occured when trying to reach the website.")
+
+
+class SelectorForm(Form):
+    article_selector = StringField("Article selector", validators=[InputRequired()])
+
+    url_selector = StringField("Link selector", validators=[InputRequired()])
+    title_selector = StringField("Title selector", validators=[InputRequired()])
+    date_selector = StringField("Publication date selector", validators=[InputRequired()])
+    summary_selector = StringField("Summary selector", validators=[InputRequired()])

@@ -20,7 +20,7 @@ import hashlib
 import os.path
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import cache
 from typing import List, Optional
 
@@ -31,6 +31,7 @@ import requests
 
 from feedgen.feed import FeedGenerator
 from mistralai.client import MistralClient
+from mistralai.exceptions import MistralAPIException
 from mistralai.models.chat_completion import ChatMessage
 from requests.exceptions import RequestException
 
@@ -111,7 +112,7 @@ def feed_to_rss(feed: Feed, items: List[Article]) -> str:
 
         if item.date:
             fe.pubDate(item.date)
-            guid_components.append(item.date)
+            guid_components.append(str(item.date))
 
         if item.summary:
             fe.content(item.summary, type="CDATA")
@@ -156,16 +157,19 @@ def _guess_feed_selectors_from_dom(dom: bs4.BeautifulSoup, feed: Feed) -> None:
         ChatMessage(role="user", content=str(dom.select_one("body"))),
     ]
 
-    response = _mistral_client().chat(
-        model="mistral-large-latest",
-        response_format={"type": "json_object"},
-        messages=messages,
-    )
+    try:
+        response = _mistral_client().chat(
+            model="mistral-large-latest",
+            response_format={"type": "json_object"},
+            messages=messages,
+        )
+    except MistralAPIException:
+        return
 
-    print(response.choices[0].message.content)
-
-    json_response = json.loads(response.choices[0].message.content)
-    print(json_response)
+    try:
+        json_response = json.loads(response.choices[0].message.content)
+    except json.JSONDecodeError:
+        return
 
     if "article" in json_response:
         feed.article_selector = json_response["article"]
@@ -220,7 +224,12 @@ def __parse_date(article: bs4.element.Tag, selector: str) -> Optional[datetime]:
     date_text = __parse_text(article, selector)
 
     if date_text is not None:
-        return dateparser.parse(date_text)
+        date = dateparser.parse(date_text)
+
+        if date.tzinfo is None:
+            date = date.replace(tzinfo=timezone.utc)
+
+        return date
     else:
         return None
 

@@ -18,6 +18,8 @@
 
 from datetime import datetime, timezone
 
+from sqlalchemy.schema import Index
+
 from web2rss.app import db
 
 
@@ -41,3 +43,9 @@ class Feed(db.Model):
 
     def has_required_selectors(self) -> bool:
         return self.article_selector and any([self.title_selector, self.summary_selector])
+
+
+Index(
+    'idx_feed_created_at',
+    Feed.created_at.desc(),
+)
