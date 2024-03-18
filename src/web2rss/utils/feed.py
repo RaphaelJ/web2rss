@@ -131,7 +131,7 @@ def _fetch_dom(url: str) -> Optional[bs4.BeautifulSoup]:
     except RequestException as _e:
         return None
 
-    return bs4.BeautifulSoup(html, 'html.parser')
+    return bs4.BeautifulSoup(html, "html.parser")
 
 
 @cache
@@ -143,7 +143,7 @@ def _mistral_client() -> MistralClient:
 @cache
 def _guess_selectors_prompt() -> str:
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    prompt_path = os.path.join(current_dir, "prompts", "guess_selectors.md")
+    prompt_path = os.path.join(current_dir, "..", "prompts", "guess_selectors.md")
 
     with open(prompt_path) as f:
         return f.read()

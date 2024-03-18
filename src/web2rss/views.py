@@ -16,12 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from urllib.parse import urlparse
+
 from flask import Response, render_template, redirect, request, url_for
 
 from web2rss.app import app, db
-from web2rss.feed_utils import fetch_feed_items, feed_to_rss, create_feed_from_url
 from web2rss.forms import SelectorForm, URLForm
 from web2rss.models import Feed
+from web2rss.utils.feed import fetch_feed_items, feed_to_rss, create_feed_from_url
+from web2rss.utils.proxy import http_proxy
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -60,7 +63,7 @@ def feed_xml(id: int):
 
 
 @app.route("/feed/<int:id>/settings", methods=["GET", "POST"])
-def feed_settings(id):
+def feed_settings(id: int):
     form = SelectorForm(request.form)
 
     if request.method == "POST" and form.validate():
@@ -79,4 +82,29 @@ def feed_settings(id):
             feed = db.session.query(Feed).get_or_404(id)
 
     return render_template("feed/settings.html", feed=feed)
+
+
+@app.route("/feed/<int:id>/proxy/")
+@app.route("/feed/<int:id>/proxy/<path:path>")
+def feed_proxy(id: int, path: str = ""):
+    """Provides an HTTP proxy to the feed's webpage.
+
+    This is required by the feed setting's <iframe> to bypass cross-origin safe guards.
+    """
+
+    print(path)
+
+    with db.session.begin():
+        feed = db.session.query(Feed).get_or_404(id)
+
+    parsed_url = urlparse(feed.url)
+
+    if path:
+        url = f"{parsed_url.scheme}://{parsed_url.hostname}/{path}"
+    else:
+        url = f"{parsed_url.scheme}://{parsed_url.hostname}"
+
+    proxied_url = lambda proxied_path: url_for("feed_proxy", id=id, path=proxied_path)
+
+    return http_proxy(proxied_url, url, request.args)
 

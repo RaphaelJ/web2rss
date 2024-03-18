@@ -47,15 +47,15 @@
     </div>
 
     <div class="col-lg-9">
-        <iframe
-            title="{{ feed.page_title|escape }}"
-            style="
-                width: 100%;
-                height: 600px;
-                border: var(--bs-border-width) solid var(--bs-border-color);
-                border-radius: var(--bs-border-radius);"
-            src="{{ feed.url }}">
-        </iframe>
+        <feed-iframe
+            url="{{ url_for('feed_proxy', id=feed.id, path=feed.url_path()) }}"
+            article_selector="{{ feed.article_selector }}"
+            url_selector="{{ feed.url_selector }}"
+            title_selector="{{ feed.title_selector }}"
+            date_selector="{{ feed.date_selector }}"
+            summary_selector="{{ feed.summary_selector }}"
+            active_selector="summary">
+        </feed-iframe>
     </div>
 
     <div class="col-lg-3">
@@ -64,6 +64,11 @@
             method="POST"
             class="row row-gap-2">
             <h4>Content selectors</h4>
+
+            <div class="col-12 form-text">
+                Visually customize the DOM selectors by clicking on the
+                <i class="bi bi-hand-index"></i> buttons.
+            </div>
 
             <div class="col-12">
                 <label for="article-selector" class="form-label"><small>Article</small></label>

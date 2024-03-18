@@ -47,28 +47,30 @@
                         </small>
                     </h6>
 
-                    {% if feed.has_required_selectors() %}
-                        <a
-                            href="{{ url_for('feed_xml', id=feed.id) }}"
-                            target="_blank"
-                            class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-rss"></i>
-                            Feed
-                        </a>
-                    {% else %}
-                        <abbr title="The feed is invalid. Please fix the settings first.">
-                            <button class="btn btn-sm btn-outline-danger" disabled>
+                    <div class="btn-group" role="group">
+                        {% if feed.has_required_selectors() %}
+                            <a
+                                href="{{ url_for('feed_xml', id=feed.id) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-rss"></i>
                                 Feed
-                            </button></abbr>
-                    {% endif %}
+                            </a>
+                        {% else %}
+                            <abbr title="The feed is invalid. Please fix the settings first.">
+                                <button class="btn btn-sm btn-outline-danger" disabled>
+                                    <i class="bi bi-rss"></i>
+                                    Feed
+                                </button></abbr>
+                        {% endif %}
 
-                    <a
-                        href="{{ url_for('feed_settings', id=feed.id) }}"
-                        class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-gear"></i>
-                        Settings
-                    </a>
+                        <a
+                            href="{{ url_for('feed_settings', id=feed.id) }}"
+                            class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-gear"></i>
+                            Settings
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

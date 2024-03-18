@@ -16,6 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from urllib.parse import urlparse
+
 from datetime import datetime, timezone
 
 from sqlalchemy.schema import Index
@@ -33,6 +35,7 @@ class Feed(db.Model):
     )
 
     url = db.Column(db.String(), nullable=False)
+
     page_title = db.Column(db.String(), nullable=False)
 
     article_selector = db.Column(db.String(), nullable=True)
@@ -43,6 +46,9 @@ class Feed(db.Model):
 
     def has_required_selectors(self) -> bool:
         return self.article_selector and any([self.title_selector, self.summary_selector])
+
+    def url_path(self) -> str:
+        return urlparse(self.url).path
 
 
 Index(

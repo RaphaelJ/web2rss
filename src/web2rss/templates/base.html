@@ -23,7 +23,7 @@
         {% block head %}{% endblock %}
     </head>
     <body>
-        <div class="container">
+        <div class="container" id="app">
             <div class="row mb-5">
                 <div class="col col-lg-10 offset-lg-1">
                     <div class="row row-gap-3 justify-content-center">
@@ -53,7 +53,11 @@
             integrity="sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ="
             crossorigin="anonymous">
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.min.js"></script>
+        {% if config['DEBUG'] %}
+            <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.min.js"></script>
+        {% else %}
+            <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.min.prod.js"></script>
+        {% endif %}
         <script src="{{ url_for('static', filename='app.js') }}"></script>
     </body>
 </html>
