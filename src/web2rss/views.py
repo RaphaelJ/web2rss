@@ -70,11 +70,12 @@ def feed_settings(id: int):
         with db.session.begin():
             feed = db.session.query(Feed).get_or_404(id)
 
-            feed.article_selector = form.article_selector.data
-            feed.url_selector = form.url_selector.data
-            feed.title_selector = form.title_selector.data
-            feed.date_selector = form.date_selector.data
-            feed.summary_selector = form.summary_selector.data
+            feed.article_selector = form.article.data
+            feed.link_selector = form.link.data
+            feed.title_selector = form.title.data
+            feed.date_selector = form.date.data
+            feed.author_selector = form.author.data
+            feed.summary_selector = form.summary.data
 
             db.session.commit()
     else:
@@ -91,8 +92,6 @@ def feed_proxy(id: int, path: str = ""):
 
     This is required by the feed setting's <iframe> to bypass cross-origin safe guards.
     """
-
-    print(path)
 
     with db.session.begin():
         feed = db.session.query(Feed).get_or_404(id)

@@ -27,8 +27,6 @@ from flask import Response
 
 
 def http_proxy(proxied_url: Callable[[str], str], url: str, params: Mapping[str, str]) -> Response:
-    print("Proxied URL:", url)
-
     resp = requests.get(url, params=params, allow_redirects=False)
 
     headers = _proxied_headers(proxied_url, resp.headers)

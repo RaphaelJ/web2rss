@@ -20,7 +20,7 @@ import requests
 from requests import RequestException
 
 from wtforms import Form, StringField, URLField
-from wtforms.validators import DataRequired, InputRequired, ValidationError
+from wtforms.validators import DataRequired, Optional, ValidationError
 
 
 class URLForm(Form):
@@ -36,9 +36,10 @@ class URLForm(Form):
 
 
 class SelectorForm(Form):
-    article_selector = StringField("Article selector", validators=[InputRequired()])
+    article = StringField("Article", validators=[Optional()], filters=[lambda x: x or None])
 
-    url_selector = StringField("Link selector", validators=[InputRequired()])
-    title_selector = StringField("Title selector", validators=[InputRequired()])
-    date_selector = StringField("Publication date selector", validators=[InputRequired()])
-    summary_selector = StringField("Summary selector", validators=[InputRequired()])
+    link = StringField("Link", validators=[Optional()], filters=[lambda x: x or None])
+    title = StringField("Title", validators=[Optional()], filters=[lambda x: x or None])
+    date = StringField("Publication date", validators=[Optional()], filters=[lambda x: x or None])
+    author = StringField("Author", validators=[Optional()], filters=[lambda x: x or None])
+    summary = StringField("Summary", validators=[Optional()], filters=[lambda x: x or None])

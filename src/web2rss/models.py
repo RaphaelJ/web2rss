@@ -39,9 +39,10 @@ class Feed(db.Model):
     page_title = db.Column(db.String(), nullable=False)
 
     article_selector = db.Column(db.String(), nullable=True)
-    url_selector = db.Column(db.String(), nullable=True)
+    link_selector = db.Column(db.String(), nullable=True)
     title_selector = db.Column(db.String(), nullable=True)
     date_selector = db.Column(db.String(), nullable=True)
+    author_selector = db.Column(db.String(), nullable=True)
     summary_selector = db.Column(db.String(), nullable=True)
 
     def has_required_selectors(self) -> bool:

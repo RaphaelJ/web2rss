@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cache
 from typing import List, Optional
+from urllib.parse import urlparse
 
 import bs4
 import dateparser
@@ -41,9 +42,10 @@ from web2rss.models import Feed
 
 @dataclass
 class Article:
-    url: Optional[str]
+    link: Optional[str]
     title: Optional[str]
     date: Optional[str]
+    author: Optional[str]
     summary: Optional[str]
 
 
@@ -102,9 +104,9 @@ def feed_to_rss(feed: Feed, items: List[Article]) -> str:
 
         guid_components = []
 
-        if item.url:
-            fe.link(href=item.url)
-            guid_components.append(item.url)
+        if item.link:
+            fe.link(href=item.link)
+            guid_components.append(item.link)
 
         if item.title:
             fe.title(item.title)
@@ -113,6 +115,10 @@ def feed_to_rss(feed: Feed, items: List[Article]) -> str:
         if item.date:
             fe.pubDate(item.date)
             guid_components.append(str(item.date))
+
+        if item.author:
+            # FIXME: RSS requires an email value. Adds a placeholder for now.
+            fe.author({"name": item.author, "email": "unknown@domain.tld"})
 
         if item.summary:
             fe.content(item.summary, type="CDATA")
@@ -174,20 +180,22 @@ def _guess_feed_selectors_from_dom(dom: bs4.BeautifulSoup, feed: Feed) -> None:
     if "article" in json_response:
         feed.article_selector = json_response["article"]
 
-        feed.url_selector = json_response.get("url")
+        feed.link_selector = json_response.get("link")
         feed.title_selector = json_response.get("title")
         feed.date_selector = json_response.get("date")
+        feed.author_selector = json_response.get("author")
         feed.summary_selector = json_response.get("summary")
 
 
 def __parse_article_dom(feed: Feed, article_dom: bs4.element.Tag) -> Optional[Article]:
-    url = __parse_url(article_dom, feed.url_selector)
+    link = __parse_url(feed.url, article_dom, feed.link_selector)
     title = __parse_text(article_dom, feed.title_selector)
     date = __parse_date(article_dom, feed.date_selector)
+    author = __parse_text(article_dom, feed.author_selector)
     desc = __parse_text(article_dom, feed.summary_selector)
 
     if title or desc:  # RSS requires at least one of `title` or `desc`.
-        return Article(url, title, date, desc)
+        return Article(link, title, date, author, desc)
     else:
         return None
 
@@ -204,7 +212,7 @@ def __parse_text(article: bs4.element.Tag, selector: str) -> Optional[str]:
         return None
 
 
-def __parse_url(article: bs4.element.Tag, selector: str) -> Optional[str]:
+def __parse_url(feed_url: str, article: bs4.element.Tag, selector: str) -> Optional[str]:
     if selector is None:
         return None
 
@@ -213,9 +221,9 @@ def __parse_url(article: bs4.element.Tag, selector: str) -> Optional[str]:
     if url_tag is None:
         return None
     elif "href" in url_tag.attrs:
-        return url_tag.attrs["href"]
+        return __as_absolute_url(feed_url, url_tag.attrs["href"])
     elif url_tag.text.startswith(("http://", "https://")):
-        return url_tag.text
+        return __as_absolute_url(feed_url, url_tag.text)
     else:
         return None
 
@@ -239,3 +247,11 @@ def __gen_guid(components: List[str]) -> str:
 
     encoded_components = "+".join(components).encode("utf-8")
     return hashlib.sha256(encoded_components).hexdigest()
+
+
+def __as_absolute_url(root_url: str, url: str) -> str:
+    if urlparse(url).netloc:
+        return url
+    else:
+        parsed_root_url = urlparse(root_url)
+        return f"{parsed_root_url.scheme}://{parsed_root_url.netloc}/{url}"
