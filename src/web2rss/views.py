@@ -85,6 +85,16 @@ def feed_settings(id: int):
     return render_template("feed/settings.html", feed=feed)
 
 
+@app.route("/feed/<int:id>/delete")
+def feed_delete(id: int):
+    with db.session.begin():
+        feed = db.session.query(Feed).get_or_404(id)
+        db.session.delete(feed)
+        db.session.commit()
+
+    return redirect(url_for("index"))
+
+
 @app.route("/feed/<int:id>/proxy/")
 @app.route("/feed/<int:id>/proxy/<path:path>")
 def feed_proxy(id: int, path: str = ""):

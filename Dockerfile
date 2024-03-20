@@ -19,11 +19,12 @@ ENV MISTRAL_API_KEY="none"
 
 RUN python -m web2rss.main create_tables
 
-EXPOSE 8080
+ENV PORT="8080"
+
+EXPOSE $PORT
 
 CMD [                               \
     "gunicorn",                     \
     "-c", "gunicorn.conf.py",       \
-    "-b", "0.0.0.0:8080",           \
     "web2rss.app:app"               \
 ]

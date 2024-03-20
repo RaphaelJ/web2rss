@@ -6,9 +6,9 @@ https://github.com/RaphaelJ/web2rss/assets/1006806/0ebd27d6-1101-4b26-b9e2-8df14
 
 ## Features
 
-* Configure DOM selectors used to extract content
-* Uses an LLM to automatically deduce the DOM selectors
-* Visual aid tool to configure the DOM selectors
+* ⚙️ Configurable DOM selectors used to extract content
+* 🧠 Automatically deduce the DOM selectors using AI
+* 🪄 Visual aid tool to configure the DOM selectors
 
 ## Setup & running
 
@@ -26,7 +26,7 @@ The web app requires the following environment variables:
     export MISTRAL_API_KEY="your_Mistral_AI_API_key"
 ```
 
-Run the Docker image. The web app will be exposed on port 8080.
+Run the Docker image. The web app will be exposed on port 8080 by default (use `PORT` to change).
 
 ```sh
     docker run -p 8080:8080 --env SERVER_NAME --env SECRET_KEY --env MISTRAL_API_KEY web2rss

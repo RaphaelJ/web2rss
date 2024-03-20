@@ -67,5 +67,16 @@
             {% if feed.summary_selector %}summary="{{ feed.summary_selector }}"{% endif %}>
         </feed-selector-form>
     </div>
+
+    <hr>
+
+    <div class="col-12 text-center">
+        <a
+            href="{{ url_for('feed_delete', id=feed.id) }}"
+            class="btn btn-lg btn-outline-danger"
+            onclick="return confirm('Are you sure?')">
+            Delete feed
+        </a>
+    </div>
 </div>
 {% endblock %}
