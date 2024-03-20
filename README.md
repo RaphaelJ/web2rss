@@ -2,7 +2,7 @@
 
 Web2RSS generates RSS feeds from regular webpages.
 
-demo.mov
+https://github.com/RaphaelJ/web2rss/assets/1006806/0ebd27d6-1101-4b26-b9e2-8df1410f5e5e
 
 ## Features
 
