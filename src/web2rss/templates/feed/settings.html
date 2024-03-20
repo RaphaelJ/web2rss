@@ -2,6 +2,15 @@
 
 {% block page_title %}{{ feed.page_title|truncate(64) }}{% endblock %}
 
+{% block javascript %}
+    {% if config['DEBUG'] %}
+        <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.min.js"></script>
+    {% else %}
+        <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='feed_settings.js') }}"></script>
+{% endblock %}
+
 {% block content_subtitle %}
 <p class="lead text-truncate">{{ feed.page_title }}</p>
 
